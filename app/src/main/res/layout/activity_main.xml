@@ -1,26 +1,151 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:gravity="center" tools:context=".MainActivity">
-
-    <EditText
-        android:id="@+id/text"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:ripple="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="30dp"
+    android:paddingBottom="10dp"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+    
+    <flying.grub.securekey.DoorState
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:hint="Pin"
-        android:inputType="phone"
-        android:layout_above="@+id/button"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_height="100dp"
+        android:layout_marginBottom="50dp"
+        android:id="@+id/doorstate"/>
 
-    <Button
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Go"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/button" />
-</RelativeLayout>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:hint="Pin"
+            android:textSize="20sp"
+            android:gravity="center"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/delete"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_dialpad_delete"
+            android:layout_alignParentRight="true" />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_marginTop="5dp"
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@color/black"/>
+
+    <RelativeLayout
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="50dp"
+        android:layout_gravity="center">
+
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle1"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle1"/>
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle2"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle2"
+            android:layout_alignTop="@+id/numbercircle1"
+            android:layout_centerHorizontal="true" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle3"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle3"
+            android:layout_alignTop="@+id/numbercircle2"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle4"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle4"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle5"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle5"
+            android:layout_centerVertical="true"
+            android:layout_alignLeft="@+id/numbercircle2"
+            android:layout_alignStart="@+id/numbercircle2" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle6"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle6"
+            android:layout_centerVertical="true"
+            android:layout_alignLeft="@+id/numbercircle3"
+            android:layout_alignStart="@+id/numbercircle3" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle7"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle7"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle8"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle8"
+            android:layout_alignParentBottom="true"
+            android:layout_alignLeft="@+id/numbercircle5"
+            android:layout_alignStart="@+id/numbercircle5" />
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:id="@+id/numbercircle9"
+            android:background="@drawable/ripple"
+            android:src="@drawable/ic_numbercircle9"
+            android:layout_alignParentBottom="true"
+            android:layout_alignLeft="@+id/numbercircle6"
+            android:layout_alignStart="@+id/numbercircle6" />
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:id="@+id/numbercircle"
+        android:background="@drawable/ripple"
+        android:src="@drawable/ic_numbercircle"
+        android:layout_gravity="center_horizontal" />
+
+</LinearLayout>

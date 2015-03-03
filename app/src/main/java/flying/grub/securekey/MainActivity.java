@@ -6,8 +6,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -25,39 +26,25 @@ public class MainActivity extends ActionBarActivity {
     String pin;
     final String wsuri = "wss://192.168.1.99:9000";
     WebSocketClientOD wc;
+    DoorState doorState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initNumberPad();
+        doorState = (DoorState) findViewById(R.id.doorstate);
         try {
             initWebSocket();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        final Button button = (Button) findViewById(R.id.button);
-        final EditText eText = (EditText) findViewById(R.id.text);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                pin = eText.getText().toString();
-                if (wc.isOpen()){
-                    wc.send("hello");
-                }else{
-                    wc.connect();
-                    wc.send("hello");
-                }
-
-
-            }
-        });
     }
 
     private void initWebSocket() throws Exception{
-        URI myURI = null;
-        myURI = new URI(wsuri);
+        URI myURI = new URI(wsuri);
         wc = new WebSocketClientOD(myURI);
 
         String STOREPASSWORD = "trustme";
@@ -75,6 +62,55 @@ public class MainActivity extends ActionBarActivity {
 
         wc.setSocket( factory.createSocket() );
         wc.connect();
+    }
+
+    private void initNumberPad(){
+        final TextView eText = (TextView) findViewById(R.id.text);
+
+        final int[] numberIds = {R.id.numbercircle1, R.id.numbercircle2, R.id.numbercircle3, R.id.numbercircle4,
+                                R.id.numbercircle5, R.id.numbercircle6, R.id.numbercircle7, R.id.numbercircle8,
+                                R.id.numbercircle9};
+        for (int i = 0; i< numberIds.length; i++){
+            ImageView button = (ImageView) findViewById(numberIds[i]);
+            final int finalI = i;
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int number = finalI +1;
+                    eText.append("" + number);
+                }
+            });
+        }
+        final ImageView delete = (ImageView) findViewById(R.id.delete);
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String str = eText.getText().toString();
+                str = str.substring ( 0, str.length() - 1 );
+                eText.setText ( str );
+            }
+        });
+
+        final ImageView launch = (ImageView) findViewById(R.id.numbercircle);
+        launch.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                pin = eText.getText().toString();
+                if (wc.isOpen()){
+                    wc.send("hello");
+                }else{
+                    try {
+                        initWebSocket();
+                        wc.send("hello");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+
+            }
+        });
     }
 
 
@@ -115,9 +151,25 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onMessage( String message ) {
             Log.w("got", "Message : " + message);
+
             if (message.contains("alea")) {
                 String[] data = message.split(" ");
                 this.send(data[1] + " open " + pin);
+            }else if (message.contains("door")){
+                final String[] data = message.split(" ");
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(data[1].equals("1")){
+                            doorState.open();
+                        }else{
+                            doorState.close();
+                        }
+
+                    }
+                });
+
             }
         }
 
@@ -128,8 +180,13 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        public void onError( Exception ex ) {
+        public void onError( final Exception ex ) {
             ex.printStackTrace();
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
 
         }
 
