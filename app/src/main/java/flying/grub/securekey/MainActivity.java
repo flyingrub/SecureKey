@@ -1,10 +1,11 @@
 package flying.grub.securekey;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,7 +25,7 @@ import javax.net.ssl.TrustManagerFactory;
 public class MainActivity extends ActionBarActivity {
 
     String pin;
-    final String wsuri = "wss://192.168.1.99:9000";
+    String wsuri;
     WebSocketClientOD wc;
     DoorState doorState;
 
@@ -33,12 +34,22 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if(sharedPreferences.getString("prefChoose", null).equals("Local")){
+            wsuri = "wss://"+sharedPreferences.getString("prefLocal", null);
+        }else{
+            wsuri = "wss://"+sharedPreferences.getString("prefExternal", null);
+        }
+
+        Log.d("test", sharedPreferences.getString("prefChoose", null));
+
         initNumberPad();
         doorState = (DoorState) findViewById(R.id.doorstate);
         try {
             initWebSocket();
         } catch (Exception e) {
             e.printStackTrace();
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
     }
@@ -96,9 +107,9 @@ public class MainActivity extends ActionBarActivity {
             public void onClick(View v) {
 
                 pin = eText.getText().toString();
-                if (wc.isOpen()){
+                if (wc.isOpen()) {
                     wc.send("hello");
-                }else{
+                } else {
                     try {
                         initWebSocket();
                         wc.send("hello");
@@ -111,29 +122,14 @@ public class MainActivity extends ActionBarActivity {
 
             }
         });
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        launch.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), PrefActivity.class);
+                startActivity(intent);
+                return true;
+            }
+        });
     }
 
     class WebSocketClientOD extends WebSocketClient {
