@@ -1,7 +1,11 @@
 package flying.grub.securekey;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -16,10 +20,14 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -34,42 +42,51 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initNumberPad();
+        doorState = (DoorState) findViewById(R.id.doorstate);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        if(sharedPreferences.getString("prefChoose", null).equals("Local")){
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        if (mWifi.isConnected()){
             wsuri = "wss://"+sharedPreferences.getString("prefLocal", null);
         }else{
             wsuri = "wss://"+sharedPreferences.getString("prefExternal", null);
         }
+        Log.i("TAG", "" + wsuri);
 
-        Log.d("test", sharedPreferences.getString("prefChoose", null));
-
-        initNumberPad();
-        doorState = (DoorState) findViewById(R.id.doorstate);
         try {
             initWebSocket();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
         }
-
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();  // Always call the superclass method first
+        wc.close();
+    }
     private void initWebSocket() throws Exception{
         URI myURI = new URI(wsuri);
         wc = new WebSocketClientOD(myURI);
 
         String STOREPASSWORD = "trustme";
         KeyStore trusted = KeyStore.getInstance("BKS");
-        trusted.load( getApplication().getResources().openRawResource(R.raw.truststore), STOREPASSWORD.toCharArray() );
+        trusted.load(getApplication().getResources().openRawResource(R.raw.truststore), STOREPASSWORD.toCharArray());
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init( trusted );
 
-        SSLContext sslContext = null;
-        sslContext = SSLContext.getInstance("TLS");
-        sslContext.init( null, tmf.getTrustManagers(), null ); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
-        SSLSocketFactory factory = sslContext.getSocketFactory();// (SSLSocketFactory) SSLSocketFactory.getDefault();
-
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init( null, tmf.getTrustManagers(), null );
+        SSLSocketFactory factory = sslContext.getSocketFactory();
 
         wc.setSocket( factory.createSocket() );
         wc.connect();
@@ -97,17 +114,19 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View view) {
                 String str = eText.getText().toString();
-                str = str.substring ( 0, str.length() - 1 );
-                eText.setText ( str );
+                if (str.length() > 0){
+                    str = str.substring ( 0, str.length() - 1 );
+                    eText.setText ( str );
+                }
             }
         });
 
-        final ImageView launch = (ImageView) findViewById(R.id.numbercircle);
+        final DoorState launch = (DoorState) findViewById(R.id.doorstate);
         launch.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
                 pin = eText.getText().toString();
-                if (wc.isOpen()) {
+                if (wc != null && wc.isOpen()) {
                     wc.send("hello");
                 } else {
                     try {
@@ -132,20 +151,26 @@ public class MainActivity extends ActionBarActivity {
         });
     }
 
+
     class WebSocketClientOD extends WebSocketClient {
 
         public WebSocketClientOD( URI serverUri ) {
-            super( serverUri );
+            super(serverUri);
         }
 
         @Override
         public void onOpen( ServerHandshake handshakedata ) {
             Log.w("Open", "Connected");
-
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    doorState.setConnected(true);
+                }
+            });
         }
 
         @Override
-        public void onMessage( String message ) {
+        public void onMessage(String message) {
             Log.w("got", "Message : " + message);
 
             if (message.contains("alea")) {
@@ -172,17 +197,16 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onClose( int code, String reason, boolean remote ) {
             Log.w("Close", "DISConnected");
-
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    doorState.setConnected(false);
+                }
+            });
         }
 
         @Override
-        public void onError( final Exception ex ) {
-            ex.printStackTrace();
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
+        public void onError(Exception e) {
 
         }
 

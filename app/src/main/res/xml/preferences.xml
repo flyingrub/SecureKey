@@ -13,23 +13,13 @@
             android:key="prefLocal"
             android:title="Local IP"
             android:summary="Set Your Local IP"
-            android:defaultValue="192.168.1.99:9000"/>
+            android:defaultValue="0.0.0.0:0000"/>
 
         <EditTextPreference
             android:key="prefExternal"
             android:title="External IP"
             android:summary="Set Your External IP"
             android:defaultValue="0.0.0.0:0000"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Color" >
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="prefLockScreen"
-            android:summary="Lock The Screen With Password"
-            android:title="Screen Lock" >
-        </CheckBoxPreference>
-
     </PreferenceCategory>
 
 </PreferenceScreen>

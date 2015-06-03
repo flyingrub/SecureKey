@@ -24,6 +24,7 @@ public class DoorState extends View {
 
     private boolean shouldAnimate = false;
     private boolean open = false;
+    private boolean connected = false;
 
     public DoorState(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,6 +56,12 @@ public class DoorState extends View {
 
     }
 
+    public void setConnected(boolean b){
+        shouldAnimate = true;
+        this.connected = b;
+        invalidate();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -64,11 +71,14 @@ public class DoorState extends View {
         paint.setColor(Color.BLACK);
 
         String s;
-        if (open){
+        if (!connected){
+            s = "Disconnected";
+            canvas.drawRect(width/2 - curSize/2, height/2 - curSize/2, width/2 + curSize/2, height/2 + curSize/2, paint);
+        }else if (open){
             s = "Open";
             canvas.drawCircle(width/2, height/2, curSize/2, paint);
         }else{
-            canvas.drawRect(width/2 - curSize/2, height/2 - curSize/2, width/2 + curSize/2, height/2 + curSize/2, paint);
+            canvas.drawCircle(width / 2, height/2, curSize/2, paint);
             s = "Closed";
         }
 

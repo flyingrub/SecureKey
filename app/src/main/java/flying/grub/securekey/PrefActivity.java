@@ -13,6 +13,5 @@ public class PrefActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
         ListPreference localornot = (ListPreference) findPreference ("prefChoose");
-        localornot.setValueIndex(0);
     }
 }

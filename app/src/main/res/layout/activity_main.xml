@@ -9,11 +9,11 @@
     android:paddingBottom="10dp"
     android:orientation="vertical"
     tools:context=".MainActivity">
-    
+
     <flying.grub.securekey.DoorState
         android:layout_width="fill_parent"
         android:layout_height="100dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="30dp"
         android:id="@+id/doorstate"/>
 
     <RelativeLayout
@@ -139,13 +139,5 @@
             android:layout_alignLeft="@+id/numbercircle6"
             android:layout_alignStart="@+id/numbercircle6" />
     </RelativeLayout>
-
-    <ImageView
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:id="@+id/numbercircle"
-        android:background="@drawable/ripple"
-        android:src="@drawable/ic_numbercircle"
-        android:layout_gravity="center_horizontal" />
 
 </LinearLayout>
