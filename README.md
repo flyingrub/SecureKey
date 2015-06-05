@@ -4,7 +4,7 @@ Android Client (WIP) which connects to a custom WebSocket Server to open a door 
 ## What is this ?
 This project is the android client which can communicate to a SecureWebSocket with self-signed certificate.
 It use [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket).
-For more information on the project check the server git : [SSWOD](https://github.com/flyingrub/SSWOD)
+For more information on the project check the server git : [Tonadoor](https://github.com/flyingrub/tonadoor)
 
 ## ToDO :
 * Settings : import keystore manually.
