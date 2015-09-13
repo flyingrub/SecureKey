@@ -1,6 +1,36 @@
 <resources>
     <string name="app_name">SecureKey</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="settings">Settings</string>
+    <string name="app_info">About this app</string>
+
+    <string name="wifi_added">%s is now the local wifi.</string>
+    <string name="not_connected_wifi">You should connect to a wifi first…</string>
+
+    <string name="pref_local_ip">Local IP</string>
+    <string name="pref_local_ip_summary">Set Your Local IP</string>
+    <string name="pref_external_ip">External IP</string>
+    <string name="pref_external_ip_summary">Set Your External IP</string>
+    <string name="pref_default_ip">0.0.0.0:0000</string>
+    
+    <string name="pref_local_wifi">Set the local wifi</string>
+    <string name="pref_local_wifi_summary">When connected to the actual wifi the local ip will be used.</string>
+    <string name="pref_qrcode_title">Trust the new Server</string>
+    <string name="pref_qrcode_summary">Flash the qrcode to trust the server.</string>
+
+    <string name="qrcode_title">Flash the QR Code</string>
+    <string name="qrcode_summary">You need to get the qr code from a safe way and flash it to trust the server.</string>
+    <string name="qrcode_title_trusted">Your server is now trusted.</string>
+    <string name="qrcode_summary_trusted">You can now close the qr code view to connect to it.</string>
+
+    <string name="license">License</string>
+    <string name="donate">Donate</string>
+    <string name="donate_summary">Click in order to support my work :) …</string>
+    <string name="source_code">Github</string>
+    <string name="source_code_summary">Acces to the source code.</string>
+    <string name="version">SecureKey Version</string>
+
+    <string name="github" translatable="false">https://github.com/flyingrub/SecureKey</string>
+    <string name="license_type" translatable="false">GNU General Public License 2</string>
+    <string name="donate_url" translatable="false">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=6DE8SFMJKRVK2</string>
 </resources>

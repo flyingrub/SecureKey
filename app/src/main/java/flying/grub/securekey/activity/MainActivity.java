@@ -1,14 +1,14 @@
-package flying.grub.securekey;
+package flying.grub.securekey.activity;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,24 +18,29 @@ import android.widget.Toast;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.File;
 import java.net.URI;
 import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+
+import flying.grub.securekey.R;
+import flying.grub.securekey.network.DoorStateChanger;
+import flying.grub.securekey.network.WebsocketKey;
+import flying.grub.securekey.view.DoorState;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
-    String pin;
-    String wsuri;
-    WebSocketClientOD wc;
-    DoorState doorState;
+    private static String pin;
+    private String wsuri;
+    private WebsocketKey wc;
+    private DoorStateChanger changer;
+    private DoorState doorState;
+
+    private final static String TAG = PrefActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,20 +48,73 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         initNumberPad();
+
         doorState = (DoorState) findViewById(R.id.doorstate);
+        changer = new DoorStateChanger() {
+            @Override
+            public void closed() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        doorState.close();
+                    }
+                });
+            }
+
+            @Override
+            public void disconnected() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        doorState.setConnected(false);
+                    }
+                });
+            }
+
+            @Override
+            public void opened() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        doorState.open();
+                    }
+                });
+            }
+
+            @Override
+            public void connected() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        doorState.setConnected(true);
+                    }
+                });
+            }
+        };
+    }
+
+    public static String getPin() {
+        return pin;
     }
 
     @Override
     public void onResume() {
         super.onResume();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
-        if (mWifi.isConnected()){
-            wsuri = "wss://"+sharedPreferences.getString("prefLocal", null);
-        }else{
-            wsuri = "wss://"+sharedPreferences.getString("prefExternal", null);
+        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
+        String mac_local = sharedPreferences.getString("local_wifi_value", null);
+
+        Log.d(TAG, wifiInfo.toString());
+        Log.d(TAG, mac_local);
+        if (wifiInfo.getNetworkId() != -1 && mac_local != null && mac_local.equals(wifiInfo.getMacAddress())) { // if we are on the trusted wifi.
+            Log.d(TAG, "Local IP");
+            wsuri = "wss://"+sharedPreferences.getString("pref_local_ip", null);
+        } else {
+            Log.d(TAG, "External IP");
+            wsuri = "wss://"+sharedPreferences.getString("pref_external_ip", null);
         }
         Log.i("TAG", "" + wsuri);
 
@@ -73,22 +131,9 @@ public class MainActivity extends ActionBarActivity {
         super.onPause();  // Always call the superclass method first
         wc.close();
     }
-    private void initWebSocket() throws Exception{
+    private void initWebSocket() throws Exception {
         URI myURI = new URI(wsuri);
-        wc = new WebSocketClientOD(myURI);
-
-        String STOREPASSWORD = "trustme";
-        KeyStore trusted = KeyStore.getInstance("BKS");
-        trusted.load(getApplication().getResources().openRawResource(R.raw.truststore), STOREPASSWORD.toCharArray());
-
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init( trusted );
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init( null, tmf.getTrustManagers(), null );
-        SSLSocketFactory factory = sslContext.getSocketFactory();
-
-        wc.setSocket( factory.createSocket() );
+        wc = new WebsocketKey(myURI, changer, new File(getFilesDir(), "custom.bks"));
         wc.connect();
     }
 
@@ -150,67 +195,4 @@ public class MainActivity extends ActionBarActivity {
             }
         });
     }
-
-
-    class WebSocketClientOD extends WebSocketClient {
-
-        public WebSocketClientOD( URI serverUri ) {
-            super(serverUri);
-        }
-
-        @Override
-        public void onOpen( ServerHandshake handshakedata ) {
-            Log.w("Open", "Connected");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    doorState.setConnected(true);
-                }
-            });
-        }
-
-        @Override
-        public void onMessage(String message) {
-            Log.w("got", "Message : " + message);
-
-            if (message.contains("alea")) {
-                String[] data = message.split(" ");
-                this.send(data[1] + " open " + pin);
-            }else if (message.contains("door")){
-                final String[] data = message.split(" ");
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(data[1].equals("1")){
-                            doorState.open();
-                        }else{
-                            doorState.close();
-                        }
-
-                    }
-                });
-
-            }
-        }
-
-        @Override
-        public void onClose( int code, String reason, boolean remote ) {
-            Log.w("Close", "DISConnected");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    doorState.setConnected(false);
-                }
-            });
-        }
-
-        @Override
-        public void onError(Exception e) {
-
-        }
-
-    }
-
-
 }

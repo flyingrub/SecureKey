@@ -3,13 +3,15 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/black</item>
-        <item name="colorPrimaryDark">@color/transparent</item>
-        <item name="colorAccent">@color/transparent</item>
-        <item name="android:textColorPrimary">@color/transparent</item>
-        <item name="colorControlNormal">@color/black</item>
-        <item name="colorControlActivated">@color/black</item>
-        <item name="colorControlHighlight">@color/transparent</item>
+        <item name="colorPrimary">@color/grey_dark</item>
+        <item name="colorPrimaryDark">@color/grey_darkest</item>
+        <item name="colorAccent">@color/black</item>
+        <item name="android:textColorPrimary">@color/grey_dark</item>
+    </style>
+
+    <style name="ToolBarStyle" parent="">
+        <item name="android:textColor">@color/grey_light</item>
+        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
     </style>
 
 </resources>

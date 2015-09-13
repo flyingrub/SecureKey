@@ -20,6 +20,10 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.2.1'
     compile files('libs/java_websocket.jar')
+    compile 'com.madgag.spongycastle:core:1.51.0.0'
+    compile 'com.madgag.spongycastle:prov:1.51.0.0'
+    compile 'com.madgag.spongycastle:pkix:1.51.0.0'
+    compile 'com.dlazaro66.qrcodereaderview:qrcodereaderview:1.0.0'
 }

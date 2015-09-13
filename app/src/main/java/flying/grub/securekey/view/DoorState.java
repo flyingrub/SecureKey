@@ -1,4 +1,4 @@
-package flying.grub.securekey;
+package flying.grub.securekey.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
