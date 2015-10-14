@@ -105,16 +105,16 @@ public class MainActivity extends AppCompatActivity {
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 
-        String mac_local = sharedPreferences.getString("local_wifi_value", null);
+        String mac_local = sharedPreferences.getString("local_wifi_value", "");
 
         Log.d(TAG, wifiInfo.toString());
         Log.d(TAG, mac_local);
-        if (wifiInfo.getNetworkId() != -1 && mac_local != null && mac_local.equals(wifiInfo.getMacAddress())) { // if we are on the trusted wifi.
+        if (wifiInfo.getNetworkId() != -1 && mac_local.equals(wifiInfo.getMacAddress())) { // if we are on the trusted wifi.
             Log.d(TAG, "Local IP");
-            wsuri = "wss://"+sharedPreferences.getString("pref_local_ip", null);
+            wsuri = "wss://"+sharedPreferences.getString("pref_local_ip", "");
         } else {
             Log.d(TAG, "External IP");
-            wsuri = "wss://"+sharedPreferences.getString("pref_external_ip", null);
+            wsuri = "wss://"+sharedPreferences.getString("pref_external_ip", "");
         }
         Log.i("TAG", "" + wsuri);
 
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void initWebSocket() throws Exception {
         URI myURI = new URI(wsuri);
-        wc = new WebsocketKey(myURI, changer, new File(getFilesDir(), "custom.bks"));
+        wc = new WebsocketKey(myURI, changer, getBaseContext());
         wc.connect();
     }
 

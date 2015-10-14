@@ -1,5 +1,6 @@
 package flying.grub.securekey.network;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.java_websocket.client.WebSocketClient;
@@ -7,11 +8,14 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.io.File;
 import java.net.URI;
+import java.security.KeyStore;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
+import flying.grub.securekey.R;
 import flying.grub.securekey.activity.MainActivity;
 import flying.grub.securekey.view.DoorState;
 
@@ -20,12 +24,21 @@ import flying.grub.securekey.view.DoorState;
  */
 public class WebsocketKey extends WebSocketClient {
 
-    DoorStateChanger changer;
+    private DoorStateChanger changer;
+    private static final String STOREPASSWORD = "trustme";
 
-    public WebsocketKey(URI serverUri, DoorStateChanger changer, File trustStore) throws Exception {
+    public WebsocketKey(URI serverUri, DoorStateChanger changer, Context context) throws Exception {
         super(serverUri);
-        SSLContext sslContext = SslUtils.getSSLContext(trustStore);
+
+        KeyStore trusted = KeyStore.getInstance("BKS");
+        trusted.load(context.getResources().openRawResource(R.raw.truststore), STOREPASSWORD.toCharArray());
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        tmf.init(trusted);
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init( null, tmf.getTrustManagers(), null );
         SSLSocketFactory factory = sslContext.getSocketFactory();
+
         this.setSocket(factory.createSocket());
         this.changer = changer;
     }
