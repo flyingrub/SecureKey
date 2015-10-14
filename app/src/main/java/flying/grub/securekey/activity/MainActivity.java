@@ -129,7 +129,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();  // Always call the superclass method first
-        wc.close();
+        if (wc != null) {
+            wc.close();
+        }
     }
     private void initWebSocket() throws Exception {
         URI myURI = new URI(wsuri);
